@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <h1>Color Cleaner</h1>
+
+  <!-- Globaler Ein/Aus-Schalter -->
+  <label class="schalter">
+    <input type="checkbox" id="globalToggle" />
+    <span id="globalLabel">Farbbereinigung aktiv</span>
+  </label>
+
+  <!-- Statusanzeige -->
+  <div class="status">
+    <div><strong id="letzte">0</strong> Farbkorrekturen in letzter E-Mail</div>
+    <div class="klein"><span id="gesamt">0</span> insgesamt seit Installation</div>
+  </div>
+
+  <hr />
+
+  <!-- Vorschau -->
+  <button id="vorschauBtn" type="button">Vorschau testen…</button>
+  <div id="vorschauBereich" class="versteckt">
+    <textarea id="vorschauEingabe" rows="4"
+      placeholder="HTML hier einfügen (z. B. aus einer kopierten E-Mail) …"></textarea>
+    <div class="vorschauKopf">Bereinigt (<span id="vorschauCount">0</span> entfernt):</div>
+    <pre id="vorschauAusgabe"></pre>
+  </div>
+
+  <script src="../content/colorCleaner.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

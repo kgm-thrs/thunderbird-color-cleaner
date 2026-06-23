@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<title>Color-Cleaner v1.1 – Paste-Test (neue Fälle)</title>
+<style>
+  body { font-family: system-ui, sans-serif; line-height: 1.5; padding: 16px; }
+  h2 { margin-top: 26px; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
+  .hinweis { background:#fff3cd; padding:8px; border-radius:6px; font-size:13px; }
+  .erwartung { font-size:12px; color:#555; font-style:italic; }
+</style>
+</head>
+<body>
+
+<p class="hinweis">
+  <b>Anleitung:</b> Alles markieren (Strg+A), kopieren (Strg+C), ins
+  Thunderbird-Schreibfenster einfügen, an dich selbst senden. Im Posteingang bei
+  hellem UND dunklem Design prüfen, ob alles lesbar ist. Dieses Dokument deckt
+  gezielt die in v1.1 neu/geänderten Inline-Fälle ab.
+</p>
+
+<h2>A) !important wird jetzt abgestreift</h2>
+<p style="color:#000000 !important;">Schwarz mit !important – muss verschwinden.</p>
+<p style="color: white !important; background-color:#000 !important;">Weiß auf Schwarz, beides mit !important.</p>
+<p style="color:#1F1F1F !important; font-weight:bold !important;">Dunkelgrau + fett, beide !important – Farbe weg, fett bleibt.</p>
+<p class="erwartung">Erwartet: alle color/background-color entfernt, font-weight:bold bleibt erhalten.</p>
+
+<h2>B) Vollständige CSS-Farbnamen (vorher übersehen)</h2>
+<p style="color: aliceblue;">aliceblue</p>
+<p style="color: deeppink;">deeppink</p>
+<p style="color: rebeccapurple;">rebeccapurple</p>
+<p style="color: darkslategray;">darkslategray</p>
+<p style="color: lightgoldenrodyellow;">lightgoldenrodyellow</p>
+<p style="color: cornflowerblue; margin:0;">cornflowerblue (margin bleibt)</p>
+<p class="erwartung">Erwartet: alle diese color-Werte entfernt; margin bleibt.</p>
+
+<h2>C) background-Shorthand mit Komma-Layern</h2>
+<p style="background: url(none) no-repeat, white; padding:6px;">url-Layer + weißer Farb-Layer – nur Farbe weg, url + padding bleiben.</p>
+<p style="background: white, url(none) center; padding:6px;">Farbe zuerst, dann url-Layer – Farbe weg, kein verwaistes Komma.</p>
+<p style="background: red, url(none) center, blue; padding:6px;">Zwei Farb-Layer um einen url-Layer – beide Farben weg.</p>
+<p class="erwartung">Erwartet: in allen drei Zeilen url()/Position/padding intakt, keine hängenden Kommas.</p>
+
+<h2>D) Gradient bleibt bewusst erhalten (keine Regression)</h2>
+<p style="background: linear-gradient(#ffffff, #000000); padding:6px; color:#333;">
+  Verlauf bleibt (wird nicht angefasst); die separate harte Textfarbe #333 muss aber weg.
+</p>
+<p class="erwartung">Erwartet: linear-gradient unverändert, color:#333 entfernt.</p>
+
+<h2>E) Kontrolle – muss unverändert bleiben</h2>
+<p style="font-size:18px; font-weight:bold; text-align:center;">Groß, fett, zentriert – keine Farbe.</p>
+<ul>
+  <li style="font-style:italic;">Kursiv (kein color)</li>
+  <li style="text-decoration:underline;">Unterstrichen (kein color)</li>
+</ul>
+
+<p>— Ende —</p>
+
+</body>
+</html>

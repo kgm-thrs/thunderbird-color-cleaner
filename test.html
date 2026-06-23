@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <title>Color Cleaner – Tests</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 24px; max-width: 900px; }
+    .fall { border: 1px solid #ccc; border-radius: 8px; margin: 16px 0; padding: 12px; }
+    .fall h3 { margin: 0 0 8px; }
+    .spalten { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .box { background: #f5f5f5; border-radius: 6px; padding: 8px; }
+    .box h4 { margin: 0 0 6px; font-size: 12px; color: #666; }
+    pre { white-space: pre-wrap; word-break: break-word; font-size: 11px; margin: 0; }
+    .count { font-weight: bold; color: #1565c0; }
+    .gesamt { font-size: 18px; margin: 16px 0; }
+  </style>
+</head>
+<body>
+  <h1>Color Cleaner – Testfälle</h1>
+  <p>Diese Seite lädt <code>content/colorCleaner.js</code> und prüft die
+  Bereinigung. Links Original-HTML (gerendert), rechts das bereinigte Ergebnis.</p>
+
+  <div class="gesamt">Summe entfernter Farbangaben: <span id="gesamt" class="count">–</span></div>
+
+  <div id="tests"></div>
+
+  <script src="content/colorCleaner.js"></script>
+  <script>
+    // Die Testfälle aus der Aufgabenstellung.
+    const faelle = [
+      {
+        titel: "1) Schwarzer Text auf normalem Hintergrund",
+        html: '<p style="color:#000000; font-size:14px;">Schwarzer Text, der im Dark Mode verschwindet.</p>'
+      },
+      {
+        titel: "2) Weißer Text (color:white)",
+        html: '<p style="color: white; font-weight: bold;">Weißer Text, der im Light Mode verschwindet.</p>'
+      },
+      {
+        titel: "3) Verschachteltes HTML mit mehreren Inline-Styles",
+        html: '<div style="background-color:#fff; padding:10px;">' +
+              '<span style="color:#000;">außen</span>' +
+              '<b style="color: rgb(0,0,0); font-style: italic;">innen</b></div>'
+      },
+      {
+        titel: "4) Gemischt – harmlose und problematische Farben (alle werden entfernt)",
+        html: '<p style="color: blue;">Blau</p>' +
+              '<p style="color: #ff0000; margin:0;">Rot</p>' +
+              '<p style="color:#000; background-color:#ffffff;">Schwarz auf Weiß</p>'
+      },
+      {
+        titel: "5) Kopierter Word-Text mit komplexen Inline-Styles + <style>-Block + bgcolor",
+        html: '<style>p.MsoNormal { color: black; font-family: Calibri; }</style>' +
+              '<p class="MsoNormal" style="margin:0; color:#1F1F1F; background:#FFFFFF url(x.png) no-repeat;">' +
+              'Aus Word eingefügt</p>' +
+              '<td bgcolor="#000000" color="#ffffff">Tabellenzelle</td>'
+      }
+    ];
+
+    let gesamt = 0;
+    const container = document.getElementById("tests");
+
+    for (const fall of faelle) {
+      const { html, count } = ColorCleaner.cleanHtml(fall.html);
+      gesamt += count;
+
+      const div = document.createElement("div");
+      div.className = "fall";
+      div.innerHTML =
+        '<h3>' + fall.titel + ' – <span class="count">' + count + ' entfernt</span></h3>' +
+        '<div class="spalten">' +
+          '<div class="box"><h4>Original (Quelltext)</h4><pre></pre></div>' +
+          '<div class="box"><h4>Bereinigt (Quelltext)</h4><pre></pre></div>' +
+        '</div>';
+      const pres = div.querySelectorAll("pre");
+      pres[0].textContent = fall.html;
+      pres[1].textContent = html;
+      container.appendChild(div);
+    }
+
+    document.getElementById("gesamt").textContent = gesamt;
+  </script>
+</body>
+</html>

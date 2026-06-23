@@ -1,0 +1,10 @@
+# OS / Editor
+Thumbs.db
+.DS_Store
+*.swp
+
+# Lokale, nicht zu veröffentlichende Test-Artefakte
+*.eml
+
+# Interne Strategie-Notizen (nicht öffentlich)
+betterbird-feature-vorschlag.md

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<title>Color-Cleaner – Paste-Testdokument</title>
+<style>
+  /* Dieser <style>-Block kommt beim Kopieren NICHT immer mit, der Cleaner
+     behandelt ihn aber, falls ein Client ihn doch einbettet. */
+  .word-absatz { color: black; font-family: Calibri, sans-serif; }
+  .weiss-klasse { color: #FFFFFF; }
+  body { font-family: system-ui, sans-serif; line-height: 1.5; padding: 16px; }
+  h2 { margin-top: 28px; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
+  .hinweis { background:#fff3cd; padding:8px; border-radius:6px; font-size:13px; }
+</style>
+</head>
+<body>
+
+<p class="hinweis">
+  <b>Anleitung:</b> Alles markieren (Strg+A), kopieren (Strg+C), ins
+  Thunderbird-Schreibfenster einfügen, an dich selbst senden. Im Posteingang
+  bei dunklem UND hellem Design prüfen, ob alles lesbar ist.
+</p>
+
+<h2>1) Klassische Killer: Schwarz &amp; Weiß</h2>
+<p style="color:#000000;">Schwarzer Text per #000000 – verschwindet im Dark Mode.</p>
+<p style="color:#000;">Schwarzer Text per #000 (Kurzform).</p>
+<p style="color:black;">Schwarzer Text per Schlüsselwort „black".</p>
+<p style="color:rgb(0,0,0);">Schwarzer Text per rgb(0,0,0).</p>
+<p style="color:#ffffff;">Weißer Text per #ffffff – verschwindet im Light Mode (markieren, um ihn zu sehen).</p>
+<p style="color:white;">Weißer Text per „white".</p>
+<p style="color:rgb(255, 255, 255);">Weißer Text per rgb(255,255,255).</p>
+
+<h2>2) Hintergrundfarben</h2>
+<p style="background-color:#000000; color:#ffffff;">Weiß auf Schwarz – beides hart gesetzt.</p>
+<p style="background-color:white; color:black;">Schwarz auf Weiß – beides hart gesetzt.</p>
+<p style="background:#ffffff url(none) no-repeat; color:#111;">background-Shorthand mit Farbe + url – nur die Farbe soll weg, url bleibt.</p>
+<span style="background-color:#000;">Span mit schwarzem Hintergrund</span>
+
+<h2>3) Fast-Schwarz / Fast-Weiß (typische Word-Werte)</h2>
+<p style="color:#010101;">Fast-Schwarz #010101</p>
+<p style="color:#1F1F1F;">Dunkelgrau #1F1F1F (Word-Standard)</p>
+<p style="color:#FEFEFE;">Fast-Weiß #FEFEFE</p>
+<p style="color:#222222; background-color:#222222;">Dunkelgrau auf Dunkelgrau – doppelt fies</p>
+
+<h2>4) Bunte Farben (werden ebenfalls entfernt – Kill-Switch ist die Ausnahme)</h2>
+<p style="color:blue;">Blauer Text</p>
+<p style="color:#ff0000; margin:0;">Roter Text (margin bleibt)</p>
+<p style="color:green; font-weight:bold;">Grüner fetter Text (font-weight bleibt)</p>
+<p style="color:rgb(128,0,128);">Lila per rgb</p>
+
+<h2>5) Verschachtelt &amp; gemischt</h2>
+<div style="background-color:#ffffff; padding:10px;">
+  <span style="color:#000000;">Außen schwarz </span>
+  <b style="color:rgb(0,0,0); font-style:italic;">innen schwarz+kursiv </b>
+  <i style="color:#0000ff;">und blau verschachtelt</i>
+</div>
+
+<h2>6) Word-typischer Müll-Absatz</h2>
+<p class="word-absatz" style="margin:0cm; color:#1F1F1F; background:#FFFFFF; font-size:11.0pt; font-family:Calibri,sans-serif;">
+  So sieht ein aus Microsoft Word kopierter Absatz oft aus: harte Farbe,
+  harter Hintergrund, plus jede Menge andere Styles, die erhalten bleiben.
+</p>
+
+<h2>7) Alte HTML-Attribute (color= / bgcolor=)</h2>
+<table border="1" cellpadding="6">
+  <tr>
+    <td bgcolor="#000000"><font color="#ffffff">Weiß auf Schwarz per font color/bgcolor</font></td>
+    <td bgcolor="white"><font color="black">Schwarz auf Weiß per Attribut</font></td>
+  </tr>
+</table>
+
+<h2>8) Was bleiben MUSS (Kontrolle)</h2>
+<p style="font-size:18px; font-weight:bold; text-align:center; margin:8px;">
+  Große, fette, zentrierte Zeile – keine Farbe, darf unverändert bleiben.
+</p>
+<ul>
+  <li style="font-style:italic;">Kursiver Listenpunkt (kein color)</li>
+  <li style="text-decoration:underline;">Unterstrichener Listenpunkt</li>
+</ul>
+
+<p>— Ende des Testdokuments —</p>
+
+</body>
+</html>
