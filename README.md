@@ -41,6 +41,14 @@ cleaning for that one message (icon turns grey). The next new message is active
 again automatically. A popup on the main toolbar holds the global on/off toggle,
 a "X color corrections in last e-mail" counter, and a live preview field.
 
+## Optional: preview before sending
+
+By default the add-on is a "send and forget" tool: it cleans silently on send.
+If you prefer to see what goes out, enable **"Show preview before sending"** in the
+popup (off by default). When on, sending opens a before/after preview and only
+sends after you confirm. This is the complementary mode for people who care about
+the exact appearance; the default stays invisible and automatic.
+
 ## Install
 
 1. Download `color-cleaner.xpi`.
@@ -56,6 +64,7 @@ manifest.json
 background.js            event listeners, counter, per-window toggle
 content/colorCleaner.js  pure parsing/cleaning logic (no dependencies)
 popup/                   popup.html / popup.js / popup.css
+preview/                 optional before/after preview window
 icons/                   toolbar icons (active + greyed-out)
 test.html                in-browser test cases
 paste-test*.html         copy-paste test documents
@@ -64,6 +73,22 @@ paste-test*.html         copy-paste test documents
 The cleaning logic in `content/colorCleaner.js` is self-contained
 (`cleanHtml(html) → { html, count }`) and runs in a plain browser too, which is
 how `test.html` exercises it.
+
+## Known limitations
+
+By design, this add-on stays dependency-free and lightweight, so it does not ship
+a full CSS parser. As a result:
+
+- **`<style>` blocks with `@media` queries or nested rules are left untouched.**
+  The simple block parser would risk corrupting such CSS, so it skips them. This
+  is fine for the main use case (pasted text from Word/web carries inline styles,
+  not `<style>` blocks). Inline styles are always handled.
+- **`background` values containing data URIs with semicolons** (e.g. inline SVG)
+  may be slightly mangled, since declarations are split on `;`. Extremely rare in
+  pasted mail; never causes a crash.
+- The popup correction counter is a cosmetic statistic and not strictly
+  race-safe under simultaneous sends (irrelevant in practice — mail is sent one
+  at a time).
 
 ## License
 

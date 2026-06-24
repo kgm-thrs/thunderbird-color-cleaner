@@ -1,0 +1,120 @@
+/* preview.css – Layout des Vorschau-Fensters (anwenderorientiert:
+   nur die gesendete Fassung im Vordergrund, Original optional eingeklappt). */
+
+/* Folgt dem Tag-/Nacht-Modus des Systems/der Anwendung. */
+:root { color-scheme: light dark; }
+
+body {
+  font-family: system-ui, "Segoe UI", sans-serif;
+  font-size: 13px;
+  margin: 0;
+  padding: 16px;
+  color: #222;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;          /* volle Höhe; Padding ist via border-box enthalten */
+  box-sizing: border-box;
+  overflow: hidden;       /* kein doppelter Scrollbalken am Hauptfenster */
+}
+
+h1 {
+  font-size: 16px;
+  margin: 0 0 6px;
+}
+
+.info {
+  margin: 0 0 12px;
+  color: #444;
+}
+
+.info strong {
+  color: #1565c0;
+  font-size: 15px;
+}
+
+/* Die gesendete Fassung füllt den verfügbaren Platz, schrumpft aber nicht weg. */
+#bereinigt {
+  flex: 1;
+  min-height: 150px;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+}
+
+/* Original nur auf Wunsch. */
+#vergleich {
+  margin-top: 12px;
+}
+
+#vergleich summary {
+  cursor: pointer;
+  color: #1565c0;
+  font-size: 12px;
+  padding: 4px 0;
+  user-select: none;
+}
+
+#original {
+  width: 100%;
+  height: 180px;
+  margin-top: 6px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.aktionen {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+button {
+  padding: 8px 16px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+/* "Zurück zum Bearbeiten" bewusst dezent halten. */
+#abbrechenBtn {
+  background: #eee;
+  color: #555;
+}
+
+#abbrechenBtn:hover {
+  background: #e0e0e0;
+  color: #333;
+}
+
+/* "Senden" als klarer Call-to-Action. */
+button.primaer {
+  background: #1565c0;
+  border-color: #1565c0;
+  color: #fff;
+  font-weight: 600;
+}
+
+button.primaer:hover {
+  background: #114a90;
+}
+
+/* Nachtmodus: Fenster-Oberfläche dunkel. Die Iframes folgen weiter dem
+   Modus (color-scheme im srcdoc) und passen so zum dunklen Rahmen – das zeigt
+   bewusst, wie die Mail bei einem Dark-Mode-Empfänger ankommt. */
+@media (prefers-color-scheme: dark) {
+  body { background: #1e1e1e; color: #e6e6e6; }
+  .info { color: #bbb; }
+  .info strong { color: #6ab0ff; }
+  #bereinigt { background: #1e1e1e; border-color: #444; }
+  #original { background: #1e1e1e; border-color: #444; }
+  #vergleich summary { color: #6ab0ff; }
+  #abbrechenBtn { background: #333; color: #ccc; }
+  #abbrechenBtn:hover { background: #444; color: #fff; }
+  button.primaer { background: #1565c0; border-color: #1565c0; color: #fff; }
+  button.primaer:hover { background: #2b7de0; }
+}

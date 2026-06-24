@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Color Cleaner für E-Mails",
-  "version": "1.1.1",
+  "version": "1.2.1",
   "description": "Entfernt beim Senden explizite Text- und Hintergrundfarben aus dem HTML-Body, damit E-Mails im Dark- und Light-Mode des Empfängers lesbar bleiben.",
   "author": "Color Cleaner",
 
@@ -14,6 +14,7 @@
 
   "permissions": [
     "compose",
+    "compose.send",
     "storage"
   ],
 

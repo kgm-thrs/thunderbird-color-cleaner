@@ -30,10 +30,23 @@ let gesamtCache = null;
 
 // Standardwerte für den persistenten Zustand.
 const STANDARD = {
-  global_aktiv: true,    // Funktion grundsätzlich an?
-  gesamt_korrekturen: 0, // Lebenszeit-Zähler
-  letzte_korrekturen: 0  // Anzahl in der zuletzt gesendeten E-Mail
+  global_aktiv: true,        // Funktion grundsätzlich an?
+  gesamt_korrekturen: 0,     // Lebenszeit-Zähler
+  letzte_korrekturen: 0,     // Anzahl in der zuletzt gesendeten E-Mail
+  vorschau_vor_senden: false // Optional: vor dem Senden Vorschau zeigen (Default aus)
 };
+
+// Offene Vorschau-Daten: id -> { original, html, count, tabId }
+// Nur zum Befüllen des Vorschau-Fensters beim Öffnen. Es wird KEIN
+// onBeforeSend-Promise offen gehalten (Event-Page kann suspendieren); die
+// Vorschau hält ihre Daten selbst und schickt sie bei der Entscheidung zurück.
+const wartendeVorschauen = new Map();
+
+// Vorgemerkte, bereits bestätigte Bodies: tabId -> { html, count }
+// Wird gesetzt, wenn der Nutzer im Vorschau-Fenster "Senden" klickt; der dann
+// programmatisch ausgelöste Versand feuert onBeforeSend erneut und liefert hier
+// den bereinigten Body, ohne erneut eine Vorschau zu zeigen.
+const freigegeben = new Map();
 
 // ---------------------------------------------------------------------------
 // Hilfsfunktionen für den Zustand
@@ -114,38 +127,123 @@ browser.composeAction.onClicked.addListener(async (tab) => {
 
 browser.compose.onBeforeSend.addListener(async (tab, details) => {
   // Nur HTML-Mails behandeln; reine Text-Mails haben keine Inline-Farben.
-  if (!details.isPlainText && typeof details.body === "string") {
-    if (!(await istAktivFuerTab(tab.id))) {
-      return {}; // nichts ändern
-    }
+  if (details.isPlainText || typeof details.body !== "string") return {};
 
-    const { html, count } = ColorCleaner.cleanHtml(details.body);
-
-    // Zähler kollisionssicher aktualisieren (auch bei 0 – für "letzte E-Mail").
+  // Bereits in der Vorschau bestätigter Versand: vorgemerkten Body liefern,
+  // ohne erneut eine Vorschau zu zeigen.
+  if (freigegeben.has(tab.id)) {
+    const { html, count } = freigegeben.get(tab.id);
+    freigegeben.delete(tab.id);
     await zaehleKorrekturen(count);
-
-    if (count > 0) {
-      // Body NUR im gesendeten Objekt ersetzen – der Editor bleibt unberührt.
-      return { details: { body: html } };
-    }
+    return count > 0 ? { details: { body: html } } : {};
   }
 
-  return {};
+  if (!(await istAktivFuerTab(tab.id))) return {}; // nichts ändern
+
+  const { html, count } = ColorCleaner.cleanHtml(details.body);
+  const zustand = await ladeZustand();
+
+  // Stiller Standardmodus (send and forget): direkt bereinigen.
+  if (!zustand.vorschau_vor_senden) {
+    await zaehleKorrekturen(count);
+    return count > 0 ? { details: { body: html } } : {};
+  }
+
+  // Vorschau-Modus: Bei nichts zu tun normal senden, ohne zu stören.
+  if (count === 0) {
+    await zaehleKorrekturen(0);
+    return {};
+  }
+
+  // Sonst: diesen Sendevorgang abbrechen und die Vorschau öffnen. Der Versand
+  // wird erst durch Klick auf "Senden" im Vorschau-Fenster (programmatisch)
+  // erneut ausgelöst. So hängt nichts an der Lebensdauer der Event-Page.
+  oeffneVorschau(tab.id, details.body, html, count);
+  return { cancel: true };
 });
+
+// Öffnet das Vorschau-Fenster und hinterlegt die anzuzeigenden Daten.
+async function oeffneVorschau(tabId, original, html, count) {
+  const id = crypto.randomUUID(); // nicht erratbare ID
+  wartendeVorschauen.set(id, { original, html, count, tabId });
+  try {
+    const fenster = await browser.windows.create({
+      url: browser.runtime.getURL("preview/preview.html") + "?id=" + id,
+      type: "popup",
+      width: 620,
+      height: 620
+    });
+    // Manche Thunderbird-/Betterbird-Versionen ignorieren width/height beim
+    // Erstellen und öffnen das Fenster zu groß – Größe daher erzwingen.
+    try {
+      await browser.windows.update(fenster.id, { width: 620, height: 620, state: "normal" });
+    } catch (e2) { /* egal, falls nicht unterstützt */ }
+  } catch (e) {
+    wartendeVorschauen.delete(id);
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Aufräumen / Initialisierung
 // ---------------------------------------------------------------------------
 
-// Wenn ein Compose-Tab geschlossen wird, Per-Fenster-Override verwerfen.
+// Wenn ein Compose-Tab geschlossen wird, Per-Fenster-Zustände verwerfen.
 browser.tabs.onRemoved.addListener((tabId) => {
   proFensterDeaktiviert.delete(tabId);
+  freigegeben.delete(tabId);
 });
 
-// Wird vom Popup genutzt, um Vorschau/Test ohne echten Versand zu erzeugen.
-browser.runtime.onMessage.addListener((nachricht) => {
-  if (nachricht && nachricht.typ === "vorschau" && typeof nachricht.html === "string") {
+browser.runtime.onMessage.addListener((nachricht, sender) => {
+  if (!nachricht || !nachricht.typ) return false;
+
+  // Härtung: nur Nachrichten von den eigenen Add-on-Seiten (popup/preview)
+  // akzeptieren. In Thunderbird gibt es zwar keine fremden Webseiten, die hier
+  // hereinfunken könnten, aber als Defense-in-depth (und zukunftssicher) schaden
+  // tut es nicht.
+  if (!sender || !sender.url || !sender.url.startsWith(browser.runtime.getURL(""))) {
+    return false;
+  }
+
+  // a) Test-Vorschau aus dem Toolbar-Popup (manuell eingefügtes HTML).
+  if (nachricht.typ === "vorschau" && typeof nachricht.html === "string") {
     return Promise.resolve(ColorCleaner.cleanHtml(nachricht.html));
   }
+
+  // b) Das Vorschau-Fenster fragt die anzuzeigenden Daten ab. Es behält sie
+  //    selbst und schickt sie bei der Entscheidung zurück (Suspend-sicher).
+  if (nachricht.typ === "vorschau_daten") {
+    const eintrag = wartendeVorschauen.get(nachricht.id);
+    if (!eintrag) return Promise.resolve(null);
+    wartendeVorschauen.delete(nachricht.id); // wird nicht mehr gebraucht
+    return Promise.resolve({
+      original: eintrag.original,
+      html: eintrag.html,
+      count: eintrag.count,
+      tabId: eintrag.tabId
+    });
+  }
+
+  // c) Entscheidung "Senden": bereinigten Body vormerken, Vorschau-Fenster
+  //    schließen und den Versand programmatisch auslösen (feuert onBeforeSend,
+  //    das dann den vorgemerkten Body liefert).
+  if (nachricht.typ === "vorschau_senden") {
+    freigegeben.set(nachricht.tabId, { html: nachricht.html, count: nachricht.count });
+    if (nachricht.fensterId != null) {
+      browser.windows.remove(nachricht.fensterId).catch(() => {});
+    }
+    return browser.compose.sendMessage(nachricht.tabId).catch(() => {
+      freigegeben.delete(nachricht.tabId); // bei Fehler nicht hängen lassen
+      return false;
+    });
+  }
+
+  // d) Vorschau-Fenster schließen (Abbrechen / "Zurück zum Bearbeiten").
+  if (nachricht.typ === "vorschau_schliessen") {
+    if (nachricht.fensterId != null) {
+      browser.windows.remove(nachricht.fensterId).catch(() => {});
+    }
+    return Promise.resolve(true);
+  }
+
   return false;
 });

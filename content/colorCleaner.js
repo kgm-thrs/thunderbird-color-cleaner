@@ -42,7 +42,8 @@
     if (["inherit", "initial", "unset", "revert", "currentcolor", "none", "transparent"].includes(v)) {
       return false;
     }
-    if (/^#[0-9a-f]{3,8}$/.test(v)) return true;
+    // Exakt nur gültige Hex-Längen: 3, 4, 6 oder 8 Stellen.
+    if (/^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/.test(v)) return true;
     // Funktions-Farben inkl. moderner Farbräume (Space- und Komma-Syntax).
     if (/^(rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\s*\(/.test(v)) return true;
     // Benannte CSS-Farben – vollständige Liste der 148 CSS-Color-Keywords.

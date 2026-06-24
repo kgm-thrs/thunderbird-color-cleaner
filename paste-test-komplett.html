@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<title>Color Cleaner – Komplett-Paste-Test</title>
+<style>
+  body { font-family: system-ui, sans-serif; line-height: 1.5; padding: 16px; }
+  h2 { margin-top: 26px; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
+  .hinweis { background:#fff3cd; padding:8px; border-radius:6px; font-size:13px; }
+  .erw { font-size:12px; color:#555; font-style:italic; }
+</style>
+</head>
+<body>
+
+<p class="hinweis">
+  <b>Anleitung:</b> Alles markieren (Strg+A), kopieren (Strg+C), ins
+  Thunderbird-/Betterbird-Schreibfenster einfügen, an dich selbst senden.
+  Posteingang bei hellem UND dunklem Design prüfen. Dieses Dokument deckt alle
+  Fälle ab. Für den Vorschau-Test: im Popup „Vorschau vor dem Senden anzeigen"
+  anhaken, dann sollte sich beim Senden das Vorschau-Fenster öffnen.
+</p>
+
+<h2>1) Schwarz – alle Schreibweisen</h2>
+<p style="color:#000000;">color:#000000</p>
+<p style="color:#000;">color:#000</p>
+<p style="color:black;">color:black</p>
+<p style="color:rgb(0,0,0);">color:rgb(0,0,0)</p>
+<p style="color:rgb(0 0 0);">color:rgb(0 0 0) (Space-Syntax)</p>
+<p class="erw">Erwartet: alle entfernt.</p>
+
+<h2>2) Weiß – alle Schreibweisen (markieren zum Sehen)</h2>
+<p style="color:#ffffff;">color:#ffffff</p>
+<p style="color:#fff;">color:#fff</p>
+<p style="color:white;">color:white</p>
+<p style="color:rgb(255,255,255);">color:rgb(255,255,255)</p>
+<p class="erw">Erwartet: alle entfernt.</p>
+
+<h2>3) Hintergrundfarben</h2>
+<p style="background-color:#000000; color:#ffffff;">Weiß auf Schwarz</p>
+<p style="background-color:white; color:black;">Schwarz auf Weiß</p>
+<span style="background-color:#000;">Span mit schwarzem Hintergrund</span>
+<p class="erw">Erwartet: color und background-color entfernt.</p>
+
+<h2>4) Fast-Schwarz / Fast-Weiß / Grau-auf-Grau</h2>
+<p style="color:#010101;">#010101</p>
+<p style="color:#1F1F1F;">#1F1F1F (Word-Standard)</p>
+<p style="color:#FEFEFE;">#FEFEFE</p>
+<p style="color:#222222; background-color:#222222;">Dunkelgrau auf Dunkelgrau</p>
+<p class="erw">Erwartet: alle entfernt (jeder Hex-Wert fliegt raus).</p>
+
+<h2>5) Bunte Farben (werden ebenfalls entfernt)</h2>
+<p style="color:blue;">blue</p>
+<p style="color:#ff0000; margin:0;">#ff0000 (margin bleibt)</p>
+<p style="color:green; font-weight:bold;">green (fett bleibt)</p>
+<p style="color:rgb(128,0,128);">rgb(128,0,128)</p>
+<p class="erw">Erwartet: Farben weg, margin/font-weight bleiben.</p>
+
+<h2>6) !important</h2>
+<p style="color:#000000 !important;">color:#000000 !important</p>
+<p style="color:white !important; background-color:#000 !important;">weiß auf schwarz, beide !important</p>
+<p style="color:#1F1F1F !important; font-weight:bold !important;">Farbe + fett, beide !important</p>
+<p class="erw">Erwartet: Farben weg, font-weight:bold bleibt.</p>
+
+<h2>7) Vollständige CSS-Farbnamen</h2>
+<p style="color:aliceblue;">aliceblue</p>
+<p style="color:deeppink;">deeppink</p>
+<p style="color:rebeccapurple;">rebeccapurple</p>
+<p style="color:darkslategray;">darkslategray</p>
+<p style="color:lightgoldenrodyellow;">lightgoldenrodyellow</p>
+<p class="erw">Erwartet: alle entfernt.</p>
+
+<h2>8) Moderne Farbfunktionen</h2>
+<p style="color:oklch(0.7 0.2 30);">oklch(0.7 0.2 30)</p>
+<p style="color:lab(50 40 20);">lab(50 40 20)</p>
+<p style="color:hwb(194 0% 0%);">hwb(194 0% 0%)</p>
+<p style="color:hsl(120deg 50% 50%);">hsl(120deg 50% 50%)</p>
+<p class="erw">Erwartet: alle entfernt.</p>
+
+<h2>9) background-Shorthand mit Komma-Layern</h2>
+<p style="background:url(none) no-repeat, white; padding:6px;">url + weißer Layer</p>
+<p style="background:white, url(none) center; padding:6px;">weißer Layer + url</p>
+<p style="background:red, url(none) center, blue; padding:6px;">zwei Farb-Layer um url</p>
+<p class="erw">Erwartet: url/Position/padding bleiben, keine hängenden Kommas.</p>
+
+<h2>10) Gradient bleibt erhalten (Regression)</h2>
+<p style="background:linear-gradient(#ffffff, #000000); padding:6px; color:#333;">
+  Verlauf bleibt, color:#333 muss weg.</p>
+<p class="erw">Erwartet: linear-gradient unverändert, color:#333 entfernt.</p>
+
+<h2>11) Verschachtelt & gemischt</h2>
+<div style="background-color:#ffffff; padding:10px;">
+  <span style="color:#000000;">außen schwarz </span>
+  <b style="color:rgb(0,0,0); font-style:italic;">innen schwarz+kursiv </b>
+  <i style="color:#0000ff;">und blau</i>
+</div>
+<p class="erw">Erwartet: alle Farben weg, font-style:italic + padding bleiben.</p>
+
+<h2>12) Word-typischer Müll-Absatz</h2>
+<p style="margin:0cm; color:#1F1F1F; background:#FFFFFF; font-size:11.0pt; font-family:Calibri,sans-serif;">
+  Aus Word eingefügt: harte Farbe + Hintergrund + viele Styles.</p>
+<p class="erw">Erwartet: Farbe/Hintergrund weg, margin/font-size/font-family bleiben.</p>
+
+<h2>13) Alte HTML-Attribute (color= / bgcolor=)</h2>
+<table border="1" cellpadding="6">
+  <tr>
+    <td bgcolor="#000000"><font color="#ffffff">weiß auf schwarz (font/bgcolor)</font></td>
+    <td bgcolor="white"><font color="black">schwarz auf weiß (Attribut)</font></td>
+  </tr>
+</table>
+<p class="erw">Erwartet: color=/bgcolor= entfernt.</p>
+
+<h2>14) Kontrolle – muss UNVERÄNDERT bleiben</h2>
+<p style="font-size:18px; font-weight:bold; text-align:center; margin:8px;">
+  Groß, fett, zentriert – keine Farbe.</p>
+<ul>
+  <li style="font-style:italic;">kursiv (kein color)</li>
+  <li style="text-decoration:underline;">unterstrichen (kein color)</li>
+</ul>
+<p class="erw">Erwartet: komplett unverändert.</p>
+
+<p>— Ende des Komplett-Tests —</p>
+
+</body>
+</html>

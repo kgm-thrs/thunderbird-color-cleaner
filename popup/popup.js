@@ -23,14 +23,18 @@ async function init() {
   const letzte = document.getElementById("letzte");
   const gesamt = document.getElementById("gesamt");
 
+  const vorschauToggle = document.getElementById("vorschauToggle");
+
   // Zustand laden und Oberfläche füllen.
   if (hatBrowserApi) {
     const z = await browser.storage.local.get({
       global_aktiv: true,
       gesamt_korrekturen: 0,
-      letzte_korrekturen: 0
+      letzte_korrekturen: 0,
+      vorschau_vor_senden: false
     });
     globalToggle.checked = z.global_aktiv;
+    vorschauToggle.checked = z.vorschau_vor_senden;
     letzte.textContent = z.letzte_korrekturen;
     gesamt.textContent = z.gesamt_korrekturen;
     setzeLabel(globalLabel, z.global_aktiv);
@@ -44,17 +48,34 @@ async function init() {
     }
   });
 
+  // Schalter „Vorschau vor dem Senden".
+  vorschauToggle.addEventListener("change", async () => {
+    if (hatBrowserApi) {
+      await browser.storage.local.set({ vorschau_vor_senden: vorschauToggle.checked });
+    }
+  });
+
   // Vorschau ein-/ausblenden.
   document.getElementById("vorschauBtn").addEventListener("click", () => {
     document.getElementById("vorschauBereich").classList.toggle("versteckt");
   });
 
-  // Live-Vorschau bei jeder Eingabe.
-  document.getElementById("vorschauEingabe").addEventListener("input", (e) => {
+  // Live-Vorschau bei jeder Eingabe – entprellt (250 ms), damit das schwere
+  // DOMParser-Parsing bei großem HTML die Eingabe nicht ruckeln lässt.
+  document.getElementById("vorschauEingabe").addEventListener("input", debounce((e) => {
     const { html, count } = ColorCleaner.cleanHtml(e.target.value);
     document.getElementById("vorschauAusgabe").textContent = html;
     document.getElementById("vorschauCount").textContent = count;
-  });
+  }, 250));
+}
+
+// Verzögert die Ausführung bis 'delay' ms nach dem letzten Aufruf.
+function debounce(func, delay) {
+  let timeoutId;
+  return function (...args) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func.apply(this, args), delay);
+  };
 }
 
 function setzeLabel(el, aktiv) {

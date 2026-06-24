@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="preview.css" />
+</head>
+<body>
+  <h1>Vor dem Senden</h1>
+  <p class="info">
+    Damit die Nachricht bei jedem Empfänger lesbar bleibt, wurden
+    <strong id="count">0</strong> harte Farbangaben entfernt. So wird sie gesendet:
+  </p>
+
+  <!-- Das, was tatsächlich rausgeht – im Vordergrund. -->
+  <iframe id="bereinigt" sandbox=""></iframe>
+
+  <!-- Original nur auf Wunsch, eingeklappt. -->
+  <details id="vergleich">
+    <summary>Original anzeigen (vor der Bereinigung)</summary>
+    <iframe id="original" sandbox=""></iframe>
+  </details>
+
+  <div class="aktionen">
+    <button id="abbrechenBtn" type="button">Zurück zum Bearbeiten</button>
+    <button id="sendenBtn" type="button" class="primaer">Senden</button>
+  </div>
+
+  <script src="preview.js"></script>
+</body>
+</html>
